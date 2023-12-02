@@ -17,6 +17,9 @@ services:
       - postgres
     volumes:
       - ./build/libs/ezi-backend-0.0.1-SNAPSHOT.jar:/app/app.jar
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     command: ["sh", "-c", "java -jar /app/app.jar"]
     ports:
       - "8080:8080"
