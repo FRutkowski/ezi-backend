@@ -1,7 +1,10 @@
 package com.example.ezibackend.service;
 
+import com.example.ezibackend.controller.dto.ProductDTO;
+import com.example.ezibackend.model.Client;
 import com.example.ezibackend.model.Product;
 import com.example.ezibackend.repository.ProductRepository;
+import com.example.ezibackend.service.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,6 +18,7 @@ import java.util.Optional;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final CategoryService categoryService;
 
     public List<Product> getAllProducts() {
         return productRepository.findAll();
@@ -24,12 +28,17 @@ public class ProductService {
         return productRepository.findById(id);
     }
 
-    public Product createProduct(Product product, MultipartFile photo) throws IOException {
+    public Product createProduct(ProductDTO productDTO, MultipartFile photo) throws IOException {
+        Product product = new Product();
+        product.setPrice(productDTO.getPrice());
+        product.setName(productDTO.getName());
         product.setPhoto(photo.getBytes());
+        product.setCategory(categoryService.getCategoryById(Long.valueOf(productDTO.getCategoryId())).orElseThrow(() ->
+                new NotFoundException(Client.class, Long.valueOf(productDTO.getCategoryId()))));
         return productRepository.save(product);
     }
 
-    public Product updateProduct(Long id, Product updatedProduct, MultipartFile photo) throws IOException {
+    public Product updateProduct(Long id, ProductDTO updatedProduct, MultipartFile photo) throws IOException {
         Optional<Product> existingProduct = productRepository.findById(id);
         if (existingProduct.isPresent()) {
             Product product = existingProduct.get();
@@ -39,7 +48,8 @@ public class ProductService {
                 product.setPhoto(photo.getBytes());
             }
             product.setPhoto(updatedProduct.getPhoto());
-            product.setCategory(updatedProduct.getCategory());
+            product.setCategory(categoryService.getCategoryById(Long.valueOf(updatedProduct.getCategoryId()))
+                    .orElseThrow(() -> new NotFoundException(Client.class, Long.valueOf(updatedProduct.getCategoryId()))));
             return productRepository.save(product);
         }
         return null;
