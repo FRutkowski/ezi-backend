@@ -1,5 +1,6 @@
 package com.example.ezibackend.controller;
 
+import com.example.ezibackend.controller.dto.ProductDTO;
 import com.example.ezibackend.model.Product;
 import com.example.ezibackend.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -32,14 +33,14 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<Product> createProduct(@RequestPart("product") Product product,
+    public ResponseEntity<Product> createProduct(@RequestPart("product") ProductDTO product,
                                                  @RequestPart("photo") MultipartFile photo) throws IOException {
         Product createdProduct = productService.createProduct(product, photo);
         return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestPart("product") Product updatedProduct,
+    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestPart("product") ProductDTO updatedProduct,
                                                  @RequestPart(value = "photo", required = false) MultipartFile photo) throws IOException {
         Product product = productService.updateProduct(id, updatedProduct, photo);
         return product != null ? new ResponseEntity<>(product, HttpStatus.OK)
