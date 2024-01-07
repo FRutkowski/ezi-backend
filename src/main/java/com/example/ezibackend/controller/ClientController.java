@@ -1,7 +1,9 @@
 package com.example.ezibackend.controller;
 
 import com.example.ezibackend.model.Client;
+import com.example.ezibackend.model.ClientAction;
 import com.example.ezibackend.model.Order;
+import com.example.ezibackend.service.ClientActionService;
 import com.example.ezibackend.service.ClientService;
 import com.example.ezibackend.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ClientController {
     private final ClientService clientService;
+    private final ClientActionService clientActionService;
     private final OrderService orderService;
 
     @GetMapping
@@ -53,5 +56,10 @@ public class ClientController {
     @GetMapping("/{id}/orders")
     public List<Order> clientOrders(@PathVariable Long id) {
         return orderService.getClientOrders(id);
+    }
+
+    @GetMapping("/{id}/actions")
+    public List<ClientAction> clientActions(@PathVariable Long id) {
+        return clientActionService.getClientActionByClientId(id);
     }
 }
