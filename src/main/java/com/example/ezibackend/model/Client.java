@@ -17,10 +17,10 @@ public class Client {
     @Column(name = "id", unique = true, nullable = false)
     private Long id;
 
-    @Column(name = "firstName")
+    @Column(name = "first_name")
     private String firstName;
 
-    @Column(name = "lastName")
+    @Column(name = "last_name")
     private String lastName;
 
     @Column(name = "address")
