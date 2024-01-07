@@ -1,8 +1,13 @@
 package com.example.ezibackend.controller;
 
 import com.example.ezibackend.controller.dto.ProductDTO;
+import com.example.ezibackend.model.Client;
+import com.example.ezibackend.model.ClientAction;
 import com.example.ezibackend.model.Product;
+import com.example.ezibackend.repository.ClientActionRepository;
+import com.example.ezibackend.service.ClientService;
 import com.example.ezibackend.service.ProductService;
+import com.example.ezibackend.service.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +25,8 @@ import java.util.Optional;
 public class ProductController {
 
     private final ProductService productService;
+    private final ClientService clientService;
+    private final ClientActionRepository clientActionRepository;
 
     @GetMapping
     public List<Product> getAllProducts() {
@@ -26,8 +34,19 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
+    public ResponseEntity<Product> getProductById(@PathVariable Long id, @RequestParam(name = "clientId") Long clientId) {
         Optional<Product> product = productService.getProductById(id);
+        Client client = clientService.getClientById(clientId).orElseThrow(() ->
+                new NotFoundException(Client.class, clientId));
+
+        if (product.isPresent()) {
+            ClientAction clientAction = new ClientAction();
+            clientAction.setClient(client);
+            clientAction.setType(ClientAction.Type.VIEW_PRODUCT);
+            clientAction.setDate(LocalDateTime.now());
+            clientAction.setObjectId(id);
+            clientActionRepository.save(clientAction);
+        }
         return product.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
