@@ -1,5 +1,6 @@
 package com.example.ezibackend.controller;
 
+import com.example.ezibackend.controller.dto.ClientActionCreateDTO;
 import com.example.ezibackend.model.ClientAction;
 import com.example.ezibackend.service.ClientActionService;
 import lombok.RequiredArgsConstructor;
@@ -26,5 +27,11 @@ public class ClientActionController {
         Optional<ClientAction> clientAction = clientActionService.getClientActionById(id);
         return clientAction.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    @PostMapping
+    public ResponseEntity<ClientAction> createClientAction(@RequestBody ClientActionCreateDTO clientActionDTO) {
+        ClientAction clientAction = clientActionService.createClientAction(clientActionDTO);
+        return new ResponseEntity<>(clientAction, HttpStatus.OK);
     }
 }

@@ -18,6 +18,8 @@ public class ClientAction {
     public enum Type {
         VIEW_PRODUCT,
         VIEW_CATEGORY,
+        ADD_TO_CART,
+        DELETE_FROM_CART,
         BUY_PRODUCT
     }
 
