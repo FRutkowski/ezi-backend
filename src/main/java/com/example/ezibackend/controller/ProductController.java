@@ -71,4 +71,9 @@ public class ProductController {
         productService.deleteProduct(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    @GetMapping("details-suggestion/{id}")
+    public List<Product> getDetailsSuggestion(@PathVariable Long id, @RequestParam(name = "clientId") Long clientId) {
+        return productService.getDetailsSuggestion(id, clientId);
+    }
 }
