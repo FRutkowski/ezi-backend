@@ -1,10 +1,7 @@
 package com.example.ezibackend.service;
 
 import com.example.ezibackend.controller.dto.ProductDTO;
-import com.example.ezibackend.model.Category;
-import com.example.ezibackend.model.Client;
-import com.example.ezibackend.model.ClientAction;
-import com.example.ezibackend.model.Product;
+import com.example.ezibackend.model.*;
 import com.example.ezibackend.repository.ClientActionRepository;
 import com.example.ezibackend.repository.ProductRepository;
 import com.example.ezibackend.service.exception.NotFoundException;
@@ -115,6 +112,75 @@ public class ProductService {
         mostViewedProduct = mostViewedProduct.stream().distinct().toList();
         log.info("final results: " + mostViewedProduct.stream().map(Product::getId).toList());
         return mostViewedProduct;
+    }
+
+    public List<Product> getMostOftenBoughtWithProducts(List<Product> cartsProducts, List<Order> orders, Product.SuggestProductType suggestProductType) {
+        HashMap<Long, Integer> productOccurrences = new HashMap<>();
+        List<Order> ordersClone = new ArrayList<>(orders);
+        switch (suggestProductType) {
+            case AND:
+                log.info("Zawartość koszyka: ");
+                log.info(cartsProducts);
+
+                log.info("Zamówienia: ");
+                log.info(orders);
+
+                log.info("Wystąpienia produktów: ");
+                log.info(productOccurrences);
+                return processAND(cartsProducts, orders, productOccurrences);
+            case OR:
+            break;
+        }
+
+        return null;
+    }
+
+    public List<Product> processAND(List<Product> cartsProducts, List<Order> orders, HashMap<Long, Integer> productOccurrences) {
+        for (int i = 0; i < orders.size(); ++i) {
+            List<Product> currentOrderProducts = orders.get(i).getProducts();
+            log.info("Iteracja: " + i);
+            log.info("aktualna pula produktów: ");
+            log.info(currentOrderProducts);
+            if (cartsProducts.containsAll(currentOrderProducts)) {
+                currentOrderProducts.removeAll(cartsProducts);
+
+                log.info("Pozostałe produkty: ");
+                log.info(currentOrderProducts);
+                addOccurredProductsToMap(productOccurrences, currentOrderProducts);
+
+                log.info("Wystąpienia produktów pod dodaniu do mapy: ");
+                log.info(productOccurrences);
+            }
+        }
+
+
+        log.info("Mapa po przejściach");
+        log.info(productOccurrences);
+        ArrayList<Integer> list = new ArrayList<>();
+        for (Map.Entry<Long, Integer> entry : productOccurrences.entrySet()) {
+            list.add(entry.getValue());
+        }
+
+        LinkedHashMap<Long, Integer> sortedMap = new LinkedHashMap<>();
+        Collections.sort(list);
+        for (int num : list) {
+            for (Map.Entry<Long, Integer> entry : productOccurrences.entrySet()) {
+                if (entry.getValue().equals(num)) {
+                    sortedMap.put(entry.getKey(), num);
+                }
+            }
+        }
+
+        log.info("Posortowana mapa:");
+        log.info(sortedMap);
+        return cartsProducts;
+    }
+
+    public void addOccurredProductsToMap(HashMap<Long, Integer> productOccurrences , List<Product> products) {
+        for (Product product : products) {
+            int occurrences = productOccurrences.getOrDefault(product.getId(), 0);
+            productOccurrences.put(product.getId(), occurrences + 1);
+        }
     }
 }
 

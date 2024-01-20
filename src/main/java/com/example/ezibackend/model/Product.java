@@ -11,6 +11,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Table(name = "PRODUCT")
 public class Product {
+    public enum SuggestProductType {
+        AND,
+        OR
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", unique = true, nullable = false)

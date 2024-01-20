@@ -3,9 +3,11 @@ package com.example.ezibackend.controller;
 import com.example.ezibackend.controller.dto.ProductDTO;
 import com.example.ezibackend.model.Client;
 import com.example.ezibackend.model.ClientAction;
+import com.example.ezibackend.model.Order;
 import com.example.ezibackend.model.Product;
 import com.example.ezibackend.repository.ClientActionRepository;
 import com.example.ezibackend.service.ClientService;
+import com.example.ezibackend.service.OrderService;
 import com.example.ezibackend.service.ProductService;
 import com.example.ezibackend.service.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,6 +28,7 @@ import java.util.Optional;
 public class ProductController {
 
     private final ProductService productService;
+    private final OrderService orderService;
     private final ClientService clientService;
     private final ClientActionRepository clientActionRepository;
 
@@ -74,6 +78,25 @@ public class ProductController {
 
     @GetMapping("details-suggestion/{id}")
     public List<Product> getDetailsSuggestion(@PathVariable Long id, @RequestParam(name = "clientId") Long clientId) {
+        List<Order> orders = orderService.getAllOrders();
         return productService.getDetailsSuggestion(id, clientId);
+    }
+    @GetMapping("/cart-suggestion")
+    public List<Product> getRelatedProducts(@RequestParam(name = "clientId") Long clientId) {
+        List<Order> orders = orderService.getClientOrders(clientId);
+        List<Product> allProducts = productService.getAllProducts();
+        List<Product> cartsProducts = new ArrayList<>();
+        // NOTE: add temporary cart's products
+        for (int i = 0; i < allProducts.size(); ++i) {
+            if (i % 7 == 0) {
+                cartsProducts.add(allProducts.get(i));
+            }
+        }
+
+        return productService.getMostOftenBoughtWithProducts(
+                cartsProducts,
+                orders,
+                cartsProducts.size() > 5 ? Product.SuggestProductType.OR : Product.SuggestProductType.AND
+        );
     }
 }
