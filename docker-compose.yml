@@ -10,6 +10,7 @@ services:
       - "5432:5432"
     volumes:
       - ./db-scripts:/docker-entrypoint-initdb.d
+      - ./assets/jedzonko.png:/assets/image.png
 
   spring-boot-app:
     image: openjdk:17
