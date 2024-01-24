@@ -120,10 +120,33 @@ public class ProductService {
         switch (suggestProductType) {
             case AND:
                 log.info("Zawartość koszyka: ");
-                log.info(cartsProducts);
+                // NOTE: Loop for debugging
+                for (int i = 0; i < cartsProducts.size(); i++) {
+                    log.info("Product");
+                    log.info("ID: " + cartsProducts.get(i).getId());
+                    log.info("Kategoria: " + cartsProducts.get(i).getCategory());
+                    log.info("Cena: " + cartsProducts.get(i).getPrice());
+                }
 
                 log.info("Zamówienia: ");
                 log.info(orders);
+                // NOTE: Loop for debugging
+                for (int i = 0; i < orders.size(); i++) {
+                    log.info("Zamówienie");
+                    log.info("ID: " + orders.get(i).getId());
+                    log.info("Data: " + orders.get(i).getDate());
+                    log.info("Klient: " + orders.get(i).getClient());
+                    log.info("Finalna cena: " + orders.get(i).getFinalPrice());
+                    List<Product> products = orders.get(i).getProducts();
+
+                    // NOTE: Loop for debugging
+                    for (int z = 0; z < products.size(); z++) {
+                        log.info("Product");
+                        log.info("ID: " + products.get(i).getId());
+                        log.info("Kategoria: " + products.get(i).getCategory());
+                        log.info("Cena: " + products.get(i).getPrice());
+                    }
+                }
 
                 log.info("Wystąpienia produktów: ");
                 log.info(productOccurrences);
@@ -140,19 +163,32 @@ public class ProductService {
             List<Product> currentOrderProducts = orders.get(i).getProducts();
             log.info("Iteracja: " + i);
             log.info("aktualna pula produktów: ");
-            log.info(currentOrderProducts);
+            // NOTE: Loop for debugging
+            for (int z = 0; z < currentOrderProducts.size(); z++) {
+                log.info("Product");
+                log.info("ID: " + currentOrderProducts.get(z).getId());
+                log.info("Kategoria: " + currentOrderProducts.get(z).getCategory());
+                log.info("Cena: " + currentOrderProducts.get(z).getPrice());
+            }
+
             if (cartsProducts.containsAll(currentOrderProducts)) {
                 currentOrderProducts.removeAll(cartsProducts);
 
                 log.info("Pozostałe produkty: ");
-                log.info(currentOrderProducts);
+                // NOTE: Loop for debugging
+                for (int z = 0; z < currentOrderProducts.size(); z++) {
+                    log.info("Product");
+                    log.info("ID: " + currentOrderProducts.get(z).getId());
+                    log.info("Kategoria: " + currentOrderProducts.get(z).getCategory());
+                    log.info("Cena: " + currentOrderProducts.get(z).getPrice());
+                }
+
                 addOccurredProductsToMap(productOccurrences, currentOrderProducts);
 
                 log.info("Wystąpienia produktów pod dodaniu do mapy: ");
                 log.info(productOccurrences);
             }
         }
-
 
         log.info("Mapa po przejściach");
         log.info(productOccurrences);

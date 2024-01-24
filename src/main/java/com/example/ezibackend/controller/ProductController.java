@@ -81,17 +81,19 @@ public class ProductController {
         List<Order> orders = orderService.getAllOrders();
         return productService.getDetailsSuggestion(id, clientId);
     }
+
     @GetMapping("/cart-suggestion")
     public List<Product> getRelatedProducts(@RequestParam(name = "clientId") Long clientId) {
         List<Order> orders = orderService.getClientOrders(clientId);
-        List<Product> allProducts = productService.getAllProducts();
         List<Product> cartsProducts = new ArrayList<>();
-        // NOTE: add temporary cart's products
-        for (int i = 0; i < allProducts.size(); ++i) {
-            if (i % 7 == 0) {
-                cartsProducts.add(allProducts.get(i));
-            }
-        }
+        Optional<Product> firstProduct = productService.getProductById(5L);
+        cartsProducts.add(firstProduct.orElseGet(null));
+
+        Optional<Product> secondProduct = productService.getProductById(12L);
+        cartsProducts.add(secondProduct.orElseGet(null));
+
+//        Optional<Product> thirdProduct = productService.getProductById(5L);
+//        cartsProducts.add(thirdProduct.orElseGet(null));
 
         return productService.getMostOftenBoughtWithProducts(
                 cartsProducts,
