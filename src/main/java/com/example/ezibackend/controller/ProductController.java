@@ -92,6 +92,8 @@ public class ProductController {
         Optional<Product> secondProduct = productService.getProductById(12L);
         cartsProducts.add(secondProduct.orElseGet(null));
 
+        Optional<Product> thirdProduct = productService.getProductById(8L);
+        cartsProducts.add(thirdProduct.orElseGet(null));
 //        Optional<Product> thirdProduct = productService.getProductById(5L);
 //        cartsProducts.add(thirdProduct.orElseGet(null));
 

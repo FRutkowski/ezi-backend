@@ -15,6 +15,9 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.example.ezibackend.model.Product.SuggestProductType.AND;
+import static com.example.ezibackend.model.Product.SuggestProductType.OR;
+
 @Service
 @Log4j2
 @RequiredArgsConstructor
@@ -115,76 +118,90 @@ public class ProductService {
     }
 
     public List<Product> getMostOftenBoughtWithProducts(List<Product> cartsProducts, List<Order> orders, Product.SuggestProductType suggestProductType) {
-        HashMap<Long, Integer> productOccurrences = new HashMap<>();
-        List<Order> ordersClone = new ArrayList<>(orders);
         switch (suggestProductType) {
             case AND:
                 log.info("Zawartość koszyka: ");
                 // NOTE: Loop for debugging
                 for (int i = 0; i < cartsProducts.size(); i++) {
-                    log.info("Product");
-                    log.info("ID: " + cartsProducts.get(i).getId());
-                    log.info("Kategoria: " + cartsProducts.get(i).getCategory());
-                    log.info("Cena: " + cartsProducts.get(i).getPrice());
+                    log.info("Product " + i);
+                    log.info("      ID: " + cartsProducts.get(i).getId());
+                    log.info("      Nazwa: " + cartsProducts.get(i).getName());
+                    log.info("      Kategoria: " + cartsProducts.get(i).getCategory());
+                    log.info("      Cena: " + cartsProducts.get(i).getPrice());
                 }
 
-                log.info("Zamówienia: ");
-                log.info(orders);
+//                log.info("Zamówienia: ");
+//                log.info(orders);
                 // NOTE: Loop for debugging
                 for (int i = 0; i < orders.size(); i++) {
-                    log.info("Zamówienie");
-                    log.info("ID: " + orders.get(i).getId());
-                    log.info("Data: " + orders.get(i).getDate());
-                    log.info("Klient: " + orders.get(i).getClient());
-                    log.info("Finalna cena: " + orders.get(i).getFinalPrice());
+                    log.info("Zamówienie " + i);
+                    log.info("      ID: " + orders.get(i).getId());
+                    log.info("      Data: " + orders.get(i).getDate());
+                    log.info("      Klient: " + orders.get(i).getClient());
+                    log.info("      Finalna cena: " + orders.get(i).getFinalPrice());
                     List<Product> products = orders.get(i).getProducts();
 
                     // NOTE: Loop for debugging
                     for (int z = 0; z < products.size(); z++) {
-                        log.info("Product");
-                        log.info("ID: " + products.get(i).getId());
-                        log.info("Kategoria: " + products.get(i).getCategory());
-                        log.info("Cena: " + products.get(i).getPrice());
+                        log.info("      Product " + z);
+                        log.info("            ID: " + products.get(z).getId());
+                        log.info("            Nazwa: " + products.get(z).getName());
+                        log.info("            Kategoria: " + products.get(z).getCategory());
+                        log.info("            Cena: " + products.get(z).getPrice());
                     }
                 }
 
-                log.info("Wystąpienia produktów: ");
-                log.info(productOccurrences);
-                return processAND(cartsProducts, orders, productOccurrences);
+                List<Product> productsToSuggest = findProductsToSuggest(cartsProducts, orders, AND);
+                if (productsToSuggest.size() > 5) {
+                    log.info("Lista produktów przed zwróceniem: ");
+                    for (int z = 0; z < productsToSuggest.size(); z++) {
+                        log.info("      Product " + z);
+                        log.info("            ID: " + productsToSuggest.get(z).getId());
+                        log.info("            Nazwa: " + productsToSuggest.get(z).getName());
+                        log.info("            Kategoria: " + productsToSuggest.get(z).getCategory());
+                        log.info("            Cena: " + productsToSuggest.get(z).getPrice());
+                    }
+
+                    return productsToSuggest;
+                }
             case OR:
-            break;
+                return findProductsToSuggest(cartsProducts, orders, OR);
         }
 
         return null;
     }
 
-    public List<Product> processAND(List<Product> cartsProducts, List<Order> orders, HashMap<Long, Integer> productOccurrences) {
-        for (int i = 0; i < orders.size(); ++i) {
-            List<Product> currentOrderProducts = orders.get(i).getProducts();
+    public List<Product> findProductsToSuggest(List<Product> cartsProducts, List<Order> orders, Product.SuggestProductType suggestProductType) {
+        HashMap<Long, Integer> productOccurrences = new HashMap<>();
+        List<Order> ordersClone = new ArrayList<>(orders);
+        for (int i = 0; i < ordersClone.size(); ++i) {
+            List<Product> currentOrderProducts = ordersClone.get(i).getProducts();
             log.info("Iteracja: " + i);
             log.info("aktualna pula produktów: ");
             // NOTE: Loop for debugging
             for (int z = 0; z < currentOrderProducts.size(); z++) {
-                log.info("Product");
-                log.info("ID: " + currentOrderProducts.get(z).getId());
-                log.info("Kategoria: " + currentOrderProducts.get(z).getCategory());
-                log.info("Cena: " + currentOrderProducts.get(z).getPrice());
+                log.info("Product " + z);
+                log.info("      ID: " + currentOrderProducts.get(z).getId());
+                log.info("      Nazwa: " + currentOrderProducts.get(z).getName());
+                log.info("      Kategoria: " + currentOrderProducts.get(z).getCategory());
+                log.info("      Cena: " + currentOrderProducts.get(z).getPrice());
             }
 
-            if (cartsProducts.containsAll(currentOrderProducts)) {
+            if (suggestProductType.equals(OR) && isTheProductInTheOrder(cartsProducts, currentOrderProducts)
+                    || currentOrderProducts.containsAll(cartsProducts)) {
                 currentOrderProducts.removeAll(cartsProducts);
 
                 log.info("Pozostałe produkty: ");
                 // NOTE: Loop for debugging
                 for (int z = 0; z < currentOrderProducts.size(); z++) {
                     log.info("Product");
-                    log.info("ID: " + currentOrderProducts.get(z).getId());
-                    log.info("Kategoria: " + currentOrderProducts.get(z).getCategory());
-                    log.info("Cena: " + currentOrderProducts.get(z).getPrice());
+                    log.info("      ID: " + currentOrderProducts.get(z).getId());
+                    log.info("      Nazwa: " + currentOrderProducts.get(z).getName());
+                    log.info("      Kategoria: " + currentOrderProducts.get(z).getCategory());
+                    log.info("      Cena: " + currentOrderProducts.get(z).getPrice());
                 }
 
                 addOccurredProductsToMap(productOccurrences, currentOrderProducts);
-
                 log.info("Wystąpienia produktów pod dodaniu do mapy: ");
                 log.info(productOccurrences);
             }
@@ -192,24 +209,45 @@ public class ProductService {
 
         log.info("Mapa po przejściach");
         log.info(productOccurrences);
+
+        // NOTE: Map sorting
         ArrayList<Integer> list = new ArrayList<>();
         for (Map.Entry<Long, Integer> entry : productOccurrences.entrySet()) {
             list.add(entry.getValue());
         }
 
-        LinkedHashMap<Long, Integer> sortedMap = new LinkedHashMap<>();
-        Collections.sort(list);
+        List<Product> productsToReturn = new ArrayList<>();
+        LinkedHashMap<Long, Integer> sortedProductIdsOccurrencesMap = new LinkedHashMap<>();
+        Collections.sort(list, Collections.reverseOrder());
         for (int num : list) {
             for (Map.Entry<Long, Integer> entry : productOccurrences.entrySet()) {
                 if (entry.getValue().equals(num)) {
-                    sortedMap.put(entry.getKey(), num);
+                    sortedProductIdsOccurrencesMap.put(entry.getKey(), num);
                 }
             }
         }
 
+        int i = 0;
+        for (Map.Entry<Long, Integer> entry : sortedProductIdsOccurrencesMap.entrySet()) {
+            if (i++ == 7) break;
+            productsToReturn.add(getProductById(entry.getKey()).orElseThrow());
+        }
+
         log.info("Posortowana mapa:");
-        log.info(sortedMap);
-        return cartsProducts;
+        log.info(sortedProductIdsOccurrencesMap);
+
+        log.info("Finalne produkty: ");
+        // NOTE: Loop for debugging
+        for (int z = 0; z < productsToReturn.size(); z++) {
+            log.info("Product");
+            log.info("      ID: " + productsToReturn.get(z).getId());
+            log.info("      Nazwa: " + productsToReturn.get(z).getName());
+            log.info("      Kategoria: " + productsToReturn.get(z).getCategory());
+            log.info("      Cena: " + productsToReturn.get(z).getPrice());
+        }
+
+        log.info("Typ algorytmu" + suggestProductType);
+        return productsToReturn;
     }
 
     public void addOccurredProductsToMap(HashMap<Long, Integer> productOccurrences , List<Product> products) {
@@ -218,5 +256,14 @@ public class ProductService {
             productOccurrences.put(product.getId(), occurrences + 1);
         }
     }
-}
 
+    public boolean isTheProductInTheOrder(List<Product> products, List<Product> orderProducts) {
+        for (Product product : products) {
+            if (orderProducts.contains(product)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
