@@ -1,5 +1,6 @@
 package com.example.ezibackend.controller;
 
+import com.example.ezibackend.controller.dto.CartDTO;
 import com.example.ezibackend.controller.dto.ProductDTO;
 import com.example.ezibackend.model.Client;
 import com.example.ezibackend.model.ClientAction;
@@ -83,7 +84,7 @@ public class ProductController {
     }
 
     @GetMapping("/cart-suggestion")
-    public List<Product> getRelatedProducts(@RequestParam(name = "clientId") Long clientId) {
+    public List<Product> getRelatedProducts(@RequestParam(name = "clientId") Long clientId, @RequestBody CartDTO cartDTO) {
         List<Order> orders = orderService.getClientOrders(clientId);
         List<Product> cartsProducts = new ArrayList<>();
         Optional<Product> firstProduct = productService.getProductById(5L);
@@ -94,13 +95,33 @@ public class ProductController {
 
         Optional<Product> thirdProduct = productService.getProductById(8L);
         cartsProducts.add(thirdProduct.orElseGet(null));
-//        Optional<Product> thirdProduct = productService.getProductById(5L);
-//        cartsProducts.add(thirdProduct.orElseGet(null));
 
         return productService.getMostOftenBoughtWithProducts(
-                cartsProducts,
+                cartDTO,
                 orders,
-                cartsProducts.size() > 5 ? Product.SuggestProductType.OR : Product.SuggestProductType.AND
+//                Product.SuggestProductType.OR
+                cartDTO.getProductIds().size() > 5 ? Product.SuggestProductType.OR : Product.SuggestProductType.AND
+        );
+    }
+      
+    @PostMapping("/cart-suggestion")
+    public List<Product> getRelatedProducts2(@RequestParam(name = "clientId") Long clientId, @RequestBody CartDTO cartDTO) {
+        List<Order> orders = orderService.getClientOrders(clientId);
+        List<Product> cartsProducts = new ArrayList<>();
+        Optional<Product> firstProduct = productService.getProductById(5L);
+        cartsProducts.add(firstProduct.orElseGet(null));
+
+        Optional<Product> secondProduct = productService.getProductById(12L);
+        cartsProducts.add(secondProduct.orElseGet(null));
+
+        Optional<Product> thirdProduct = productService.getProductById(8L);
+        cartsProducts.add(thirdProduct.orElseGet(null));
+
+        return productService.getMostOftenBoughtWithProducts(
+                cartDTO,
+                orders,
+//                Product.SuggestProductType.OR
+                cartDTO.getProductIds().size() > 5 ? Product.SuggestProductType.OR : Product.SuggestProductType.AND
         );
     }
 }
