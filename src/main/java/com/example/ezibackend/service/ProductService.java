@@ -120,6 +120,24 @@ public class ProductService {
         return mostViewedProduct;
     }
 
+    public List<Product> getORCategoryProducts(CartDTO cartDTO, List<Order> orders) {
+        List<Product> products = getMostOftenBoughtWithProducts(
+                cartDTO,
+                orders,
+                Product.SuggestProductType.OR
+        );
+
+        List<Product> product = productRepository.findByIdIn(cartDTO.getProductIds());
+        List<Product> sameCategoryProducts = new ArrayList<Product>();
+        for (int i = 0; i < products.size(); i++) {
+            if (product.get(0).getCategory().getId().equals(products.get(i).getCategory().getId())) {
+                sameCategoryProducts.add(products.get(i));
+            }
+        }
+
+        return sameCategoryProducts;
+    }
+
     public List<Product> getMostOftenBoughtWithProducts(CartDTO cartDTO, List<Order> orders, Product.SuggestProductType suggestProductType) {
         List<Product> cartsProducts = productRepository.findByIdIn(cartDTO.getProductIds());
         List<Order> ordersClone = new ArrayList<>(orders);

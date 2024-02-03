@@ -124,4 +124,24 @@ public class ProductController {
                 cartDTO.getProductIds().size() > 5 ? Product.SuggestProductType.OR : Product.SuggestProductType.AND
         );
     }
+
+    @PostMapping("/category-suggestion-or")
+    public List<Product> getCategoryProductsOR(@RequestParam(name = "clientId") Long clientId, @RequestBody CartDTO cartDTO) {
+        List<Order> orders = orderService.getClientOrders(clientId);
+        List<Product> cartsProducts = new ArrayList<>();
+        Optional<Product> firstProduct = productService.getProductById(5L);
+        cartsProducts.add(firstProduct.orElseGet(null));
+
+        Optional<Product> secondProduct = productService.getProductById(12L);
+        cartsProducts.add(secondProduct.orElseGet(null));
+
+        Optional<Product> thirdProduct = productService.getProductById(8L);
+        cartsProducts.add(thirdProduct.orElseGet(null));
+
+        return productService.getORCategoryProducts(
+                cartDTO,
+                orders
+        );
+
+    }
 }
